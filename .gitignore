@@ -1,6 +1,6 @@
 __pycache__/
 *.py[cod]
-sample.dat
+vtasks.dat
 client_secrets.json
 
 
