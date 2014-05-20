@@ -1,4 +1,7 @@
-import gflags
+# this file deals with the Google tasks API - creidt to the following blog post:
+# http://parezcoydigo.wordpress.com/2011/05/16/google-tasks-terminal-geek-tool/
+# which is what this code was initially based on
+
 import httplib2
 import keyring
 import sys
@@ -8,20 +11,10 @@ from oauth2client.file import Storage
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.tools import run
 
-FLAGS = gflags.FLAGS
-
 # Set up a Flow object to be used if we need to authenticate. This
-# sample uses OAuth 2.0, and we set up the OAuth2WebServerFlow with
-# the information it needs to authenticate. Note that it is called
-# the Web Server Flow, but it can also handle the flow for native
-# applications
-# The client_id and client_secret are copied from the API Access tab on
-# the Google APIs Console
-FLOW = flow_from_clientsecrets('client_secrets.json',
-    scope='https://www.googleapis.com/auth/tasks')
-
-# To disable the local server feature, uncomment the following line:
-FLAGS.auth_local_webserver = False
+# requires having set up a Google app for yourself and downloading
+# the client_secrets.json file into the same directory.
+FLOW = flow_from_clientsecrets('client_secrets.json', scope='https://www.googleapis.com/auth/tasks')
 
 # If the Credentials don't exist or are invalid, run through the native client
 # flow. The Storage object will ensure that if successful the good
@@ -41,6 +34,35 @@ http = credentials.authorize(http)
 # to get a developerKey for your own application.
 service = build(serviceName='tasks', version='v1', http=http,
        developerKey=keyring.get_password('googleDevKey', 'finlaysoni@gmail.com'))
+
+
+# the following function returns a list of all tasks in the users list
+def get_tasks( ):
+  all_tasks = []
+  # for each task list that they have
+  tasklists = service.tasklists( ).list( ).execute( )
+  for tasklist in tasklists['items']:
+    listID = tasklist['id']
+    # for each task in this list
+    tasks = service.tasks().list(tasklist=listID).execute()
+    for task in tasks['items']:
+      # get the due date if present
+      dueDate=''
+      if 'due' in task: 
+        fullDueDate=str(task['due'])
+        dueDate=fullDueDate[:10]
+      # add an entry for this task
+      all_tasks.append((tasklist['title'], task['title'], dueDate))
+  # return all tasks
+  return all_tasks
+
+
+
+
+
+
+
+
 
 
 def main(*argv):
