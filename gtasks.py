@@ -2,6 +2,7 @@
 # http://parezcoydigo.wordpress.com/2011/05/16/google-tasks-terminal-geek-tool/
 # which is what this code was initially based on
 
+import datetime
 import httplib2
 import keyring
 import sys
@@ -36,6 +37,43 @@ service = build(serviceName='tasks', version='v1', http=http,
        developerKey=keyring.get_password('googleDevKey', 'finlaysoni@gmail.com'))
 
 
+# a class for storing a task
+class Task:
+  def __init__(self, task, tasklist):
+    self.task = task
+    self.tasklist = tasklist
+
+  # return the text of this task
+  def text(self):
+    return self.task['title']
+
+  # return the due date of this task
+  def due(self):
+    if 'due' in self.task:
+      return str(self.task['due'])[5:-14]
+    else:
+      return ''
+
+  # return whether or not the task is completed
+  def completed(self):
+    return self.task['status'] == 'completed'
+
+  # delete the current task
+  def delete(self):
+    service.tasks( ).delete(tasklist = self.tasklist['id'], task = self.task['id']).execute( )
+
+  # check off the current task
+  def check(self):
+    # make an action thing where we have the same data, but switched the status to the opposite
+    action = self.task
+    if self.completed( ):
+      action['status'] = 'needsAction'  # FIXME why does this fail?
+      del action['completed']
+    else:
+      action['status'] = 'completed'
+      action['completed'] = datetime.datetime.utcnow( ).isoformat("T") + "Z"
+    service.tasks( ).update(tasklist = self.tasklist['id'], task = self.task['id'], body = action).execute( )
+
 # the following function returns a list of all tasks in the users list
 def get_tasks( ):
   all_tasks = []
@@ -44,15 +82,10 @@ def get_tasks( ):
   for tasklist in tasklists['items']:
     listID = tasklist['id']
     # for each task in this list
-    tasks = service.tasks().list(tasklist=listID).execute()
+    tasks = service.tasks( ).list(tasklist = listID).execute()
     for task in tasks['items']:
-      # get the due date if present
-      dueDate=''
-      if 'due' in task: 
-        fullDueDate=str(task['due'])
-        dueDate=fullDueDate[:10]
       # add an entry for this task
-      all_tasks.append((tasklist['title'], task['title'], dueDate))
+      all_tasks.append(Task(task, tasklist))
   # return all tasks
   return all_tasks
 
@@ -66,28 +99,8 @@ def get_tasks( ):
 
 
 def main(*argv):
- 
-# Display all tasks in all lists. 
-# ex.: tasks ls
-
-  if sys.argv[1] == 'ls':
-    tasklists = service.tasklists().list().execute()
-    for tasklist in tasklists['items']:
-      print tasklist['title']
-      listID=tasklist['id']
-      tasks = service.tasks().list(tasklist=listID).execute()
-      for task in tasks['items']:
-        dueDate=''
-        if 'due' in task: 
-          fullDueDate=str(task['due'])
-          dueDate=fullDueDate[:10] 
-        print '    '+task['title']+' : '+dueDate
-      print
-
-
 # To add a task, the command is 'n'. Then, pass three arguments-- listName, newTask, dueDate.
 # ex: tasks n listName "This is my task." 2011-01-01
-
   if sys.argv[1] == 'n':
     listName = sys.argv[2]
     task = {
