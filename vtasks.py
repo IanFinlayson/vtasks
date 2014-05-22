@@ -7,6 +7,9 @@ import gtasks
 # global to keep track of tasks
 tasks = None
 
+# the status message to show
+status = ""
+
 # start the curses library, and return the screen
 def start_curses( ):
   # create the curses screen
@@ -31,8 +34,8 @@ def stop_curses(screen):
   curses.echo()
   curses.endwin()
 
-# returns a color pair for the status line
-def get_status_color( ):
+# returns a color pair for the header line
+def get_header_color( ):
   curses.init_pair(1, -1, curses.COLOR_BLACK)
   return curses.color_pair(1)
 
@@ -50,6 +53,11 @@ def get_highlight_color( ):
 def get_completed_highlight_color( ):
   curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_RED)
   return curses.color_pair(4) | curses.A_BOLD
+
+# retutn a color pair for the status message at the bottom
+def get_status_color( ):
+  curses.init_pair(5, curses.COLOR_RED, -1)
+  return curses.color_pair(5)
 
 # draw a task to the screen
 def draw_task(screen, task, i, highlight, rows):
@@ -77,36 +85,42 @@ def get_user_text(screen, message, first):
   for c in message + ": " + chr(first):
     tb.do_command(c)
   text = tb.edit( )
-  return text
+  return text[len(message) + 2:]
 
 
 # draw the interface of the program
 def draw_window(screen, highlight):
   global tasks
+  global status
   # draw the header bar
   i = 1
   (cols, rows) = screen.getmaxyx( )
-  screen.addstr(0, 0, "q:Quit n:New e:Edit x:Check c:Clear ?:Help".ljust(rows), get_status_color( ))
+  screen.addstr(0, 0, "q:Quit n:New e:Edit x:Check c:Clear ?:Help".ljust(rows), get_header_color( ))
   # get tasks if needed
   if tasks == None:
     tasks = gtasks.get_tasks( )
-
   # for each task list they have
   for item in tasks:
     draw_task(screen, item, i, highlight, rows)
     i += 1
-  # draw the footer bar
-  screen.addstr(cols - 2, 0, "vtasks".ljust(rows - 1), get_status_color( ))
+  # draw the status message (may be empty string)
+  screen.addstr(cols - 1, 0, status.ljust(rows - 1), get_status_color( ))
+
 
 # the main program loop
 def main_loop(screen):
   global tasks
+  global status
   highlight = 1
   while True:
     # clear and redraw the screen, then wait for input
     screen.clear( )
     draw_window(screen, highlight)
     c = screen.getch( )
+
+    # clear any old status message
+    status = ""
+
     # quit
     if c == ord('q'):
       return
@@ -133,7 +147,18 @@ def main_loop(screen):
     # jump to task by number
     elif c >= ord('0') and c <= ord('9'):
       # get the whole number
-      get_user_text(screen, "Jump to task", c)
+      num = get_user_text(screen, "Jump to task", c)
+      try:
+         num = int(num)
+         if num < 1:
+           raise ValueError
+         elif num > len(tasks):
+           raise ValueError
+         highlight = num
+      except ValueError:
+        status = "Invalid number"
+
+      
 
 
 
