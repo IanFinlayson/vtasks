@@ -1,13 +1,19 @@
 # vtasks is a curses Google Task client
 
+from os import system
+from random import choice
 import curses
 import curses.textpad
 import gtasks
+from string import ascii_uppercase, digits
 
-# global to keep track of tasks
+# global to keep track of tasks it is updated
+# from goole (via the gtasks.get_tasks( ) function
+# as needed
 tasks = None
 
-# the status message to show
+# the status message to show.  It is displayed until
+# the user hits a key at which point it is cleared
 status = ""
 
 # start the curses library, and return the screen
@@ -34,6 +40,37 @@ def stop_curses(screen):
   curses.echo()
   curses.endwin()
 
+# return a new temporary file name
+# this is done with a fixed prefix + 8 random letters and digits
+# this makes it likely that we will use different files for different
+# tasks meanging the user can see his task files if he needs to for some
+# reason (this has proved useful with mutt)
+def get_tmp_file( ):
+  return "/tmp/vtasks-" + "".join(choice(ascii_uppercase + digits) for _ in range(8))
+
+
+# create a new task and enter it into the task list
+def new_task( ):
+  global tasks
+  # get the temp file name
+  fname = get_tmp_file( )
+  # suspend curses before we execute the editor
+  curses.endwin( )
+  # next we open this file with the user's $EDITOR
+  system("$EDITOR " + fname)
+  # when this returns, the file we created should be filled with the users task
+  # resume curses
+  screen = curses.initscr( )
+  screen.refresh( )
+  curses.doupdate( )
+
+  # TODO fo real
+  gtasks.add_task('Todo', 'Write some more code', '2014-05-22')
+
+  # refresh the task list
+  tasks = gtasks.get_tasks( )
+
+
 # returns a color pair for the header line
 def get_header_color( ):
   curses.init_pair(1, -1, curses.COLOR_BLACK)
@@ -41,7 +78,7 @@ def get_header_color( ):
 
 # get a color pair for completed tasks
 def get_completed_color( ):
-  curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_MAGENTA)
+  curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)
   return curses.color_pair(2) | curses.A_BOLD
 
 # returns a color pair for the current highlighted line
@@ -51,7 +88,7 @@ def get_highlight_color( ):
 
 # returns a color pair for when we are highlighted AND completed
 def get_completed_highlight_color( ):
-  curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_RED)
+  curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_MAGENTA)
   return curses.color_pair(4) | curses.A_BOLD
 
 # retutn a color pair for the status message at the bottom
@@ -87,7 +124,6 @@ def get_user_text(screen, message, first):
   text = tb.edit( )
   return text[len(message) + 2:]
 
-
 # draw the interface of the program
 def draw_window(screen, highlight):
   global tasks
@@ -106,7 +142,6 @@ def draw_window(screen, highlight):
   # draw the status message (may be empty string)
   screen.addstr(cols - 1, 0, status.ljust(rows - 1), get_status_color( ))
 
-
 # the main program loop
 def main_loop(screen):
   global tasks
@@ -117,10 +152,8 @@ def main_loop(screen):
     screen.clear( )
     draw_window(screen, highlight)
     c = screen.getch( )
-
     # clear any old status message
     status = ""
-
     # quit
     if c == ord('q'):
       return
@@ -144,6 +177,9 @@ def main_loop(screen):
         if task.completed( ):
           task.delete( )
       tasks = gtasks.get_tasks( )
+    # make a new task
+    elif c == ord('n'):
+      new_task( )      
     # jump to task by number
     elif c >= ord('0') and c <= ord('9'):
       # get the whole number

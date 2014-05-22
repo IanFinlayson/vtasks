@@ -67,7 +67,7 @@ class Task:
     # make an action thing where we have the same data, but switched the status to the opposite
     action = self.task
     if self.completed( ):
-      action['status'] = 'needsAction'  # FIXME why does this fail?
+      action['status'] = 'needsAction'
       del action['completed']
     else:
       action['status'] = 'completed'
@@ -89,48 +89,28 @@ def get_tasks( ):
   # return all tasks
   return all_tasks
 
+# add a task into the task list
+def add_task(listName, text, due):
+  # set up the task itself
+  if due != None:
+    task = {'title' : text, 'due' : due + 'T12:00:00.000Z'}
+  else:
+    task = {'title' : text}
+  # find the task list by name
+  tasklists = service.tasklists().list().execute()
+  listID = None
+  for tasklist in tasklists['items']:
+    if listName == tasklist['title']:
+      listID=tasklist['id']
+      break
+  # if not found make a new list (this won't happen)
+  if listID == None:
+    tasklist = {
+      'title': listName,
+      }
+    result = service.tasklists().insert(body=tasklist).execute()
+    listID = result['id']
+  # actually insert the task
+  newTask = service.tasks().insert(tasklist=listID, body=task).execute()
 
-
-
-
-
-
-
-
-
-def main(*argv):
-# To add a task, the command is 'n'. Then, pass three arguments-- listName, newTask, dueDate.
-# ex: tasks n listName "This is my task." 2011-01-01
-  if sys.argv[1] == 'n':
-    listName = sys.argv[2]
-    task = {
-      'title': sys.argv[3], 
-      'due': sys.argv[4]+'T12:00:00.000Z',
-      }         
-    tasklists = service.tasklists().list().execute()
-    listID = None
-    for tasklist in tasklists['items']:
-      if listName == tasklist['title']:
-        listID=tasklist['id']
-        break
-    if listID == None:
-      tasklist = {
-        'title': listName,
-        }
-      result = service.tasklists().insert(body=tasklist).execute()
-      listID = result['id']       
-    newTask = service.tasks().insert(tasklist=listID, body=task).execute()
-
-# clear completed tasks from all lists
-# tasks c
-  if sys.argv[1] == 'c':
-    tasklists = service.tasklists().list().execute()
-    for tasklist in tasklists['items']:
-      listID = tasklist['id']
-      
-      service.tasks().clear(tasklist=listID, body='').execute()
-
-
-if __name__ == '__main__':
-  main()  
 
