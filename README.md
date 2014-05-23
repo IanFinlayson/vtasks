@@ -24,16 +24,15 @@ that everyone needs their own, but it seems the APIs are much more geared
 towards web development, where many people use the same application.
 
 You can attain a developer key by:
+
 1. Navigate to https://console.developers.google.com/project and clicking "Create Project".
 2.  Enter a name and submit.
 3. Click on the "APIs" link on the left, and turn on the "Tasks API".
 4. Next click on the "Credentials" link on the left.
 5. Click Create new client ID.
 6. Choose "Installed Application", and "Other", then click Create.
-7. Under the new Client ID for native application, click "Download JSON".  This
-   will download a file called "client\_secret[stuff].json".
-8. Rename this file to just "client\_secrets.json" and place it in the vtasks
-   directory.
+7. Under the new Client ID for native application, click "Download JSON".  This will download a file called "client\_secret[stuff].json".
+8. Rename this file to just "client\_secrets.json" and place it in the vtasks directory.
 
 ### Execution
 Finally, you should be able to execute "python2 vtasks.py".  This will open a
