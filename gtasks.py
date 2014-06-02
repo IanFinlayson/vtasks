@@ -6,6 +6,7 @@ import datetime
 import httplib2
 import keyring
 import sys
+from os import path
 
 from apiclient.discovery import build
 from oauth2client.file import Storage
@@ -15,12 +16,13 @@ from oauth2client.tools import run
 # Set up a Flow object to be used if we need to authenticate. This
 # requires having set up a Google app for yourself and downloading
 # the client_secrets.json file into the same directory.
-FLOW = flow_from_clientsecrets('client_secrets.json', scope='https://www.googleapis.com/auth/tasks')
+DIRECTORY = path.split(path.realpath(__file__))[0]
+FLOW = flow_from_clientsecrets(path.join(DIRECTORY, 'client_secrets.json'), scope='https://www.googleapis.com/auth/tasks')
 
 # If the Credentials don't exist or are invalid, run through the native client
 # flow. The Storage object will ensure that if successful the good
 # Credentials will get written back to a file.
-storage = Storage('vtasks.dat')
+storage = Storage(path.join(DIRECTORY, 'vtasks.dat'))
 credentials = storage.get()
 if credentials is None or credentials.invalid == True:
   credentials = run(FLOW, storage)

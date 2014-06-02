@@ -14,7 +14,7 @@ python-httplib2".
 python-keyring".
 - python-gflags.  This can be installed with "sudo aptitude installed python-gflags".
 - The Google Python API's.  This can be installed with the "easy\_install"
-Python program: "sudo easy\_install --upgrade google-api-python-client".
+Python program: "sudo aptitude install python-setuptools && sudo easy\_install --upgrade google-api-python-client".
 
 
 ### Setting up a Developers Key
