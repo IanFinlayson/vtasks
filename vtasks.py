@@ -63,10 +63,8 @@ def new_task( ):
   screen = curses.initscr( )
   screen.refresh( )
   curses.doupdate( )
-
-  # TODO fo real
-  gtasks.add_task('Todo', 'Write some more code', '2014-05-22')
-
+  # add the task in this file
+  gtasks.add_task(fname)
   # refresh the task list
   tasks = gtasks.get_tasks( )
 

@@ -2,11 +2,14 @@
 # http://parezcoydigo.wordpress.com/2011/05/16/google-tasks-terminal-geek-tool/
 # which is what this code was initially based on
 
+import time
+import re
 import datetime
 import httplib2
 import keyring
 import sys
 from os import path
+from datetime import date
 
 from apiclient.discovery import build
 from oauth2client.file import Storage
@@ -92,7 +95,33 @@ def get_tasks( ):
   return all_tasks
 
 # add a task into the task list
-def add_task(listName, text, due):
+def add_task(fname):
+  # load the data from this file
+  f = open(fname)
+  data = f.readlines( )
+
+  # condense the lines into one, and remove consecutive whitespace
+  text = " ".join(data)
+  text = " ".join(text.split( ))
+
+  # find if there is a due date
+  match = re.search('\d+-\d+(-\d+)*', text)
+  if match:
+    due = match.group( )
+    # remove from original string
+    text = text.replace(due + ' ', '')
+    # if they didn't give a year, use the current
+    # TODO it would be nicer if it looked at the month they gave
+    # so if it's december, and they gave month 1-11, it should really use the *next*
+    # year after the current one
+    if due.count('-') < 2:
+      due = str(date.today( ).year) + '-' + due
+  else:
+    due = None
+
+  # TODO allow for different lists
+  listName = 'Todo'
+
   # set up the task itself
   if due != None:
     task = {'title' : text, 'due' : due + 'T12:00:00.000Z'}
