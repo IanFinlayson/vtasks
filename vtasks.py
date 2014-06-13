@@ -1,4 +1,5 @@
-# vtasks is a curses Google Task client
+# vtasks, a terminal google tasks client, MIT license
+# this file includes the curses interface
 
 from os import system
 from random import choice
@@ -68,6 +69,31 @@ def new_task( ):
   # refresh the task list
   tasks = gtasks.get_tasks( )
 
+# edits an existing task
+def edit_task(which):
+  global tasks
+  # get the temp file name
+  fname = get_tmp_file( )
+  # write the task into this file
+  tasks[which].write_file(fname)
+  # open an editor on the file
+  curses.endwin( )
+  # next we open this file with the user's $EDITOR
+  system("$EDITOR " + fname)
+  # when this returns, the file we created should be filled with the users task
+  # resume curses
+  screen = curses.initscr( )
+  screen.refresh( )
+  curses.doupdate( )
+  # we update the task by deleting it and adding a fresh one with the new data
+  tasks[which].delete( )
+  gtasks.add_task(fname)
+  # refresh the task list
+  tasks = gtasks.get_tasks( )
+
+
+
+
 
 # returns a color pair for the header line
 def get_header_color( ):
@@ -129,7 +155,7 @@ def draw_window(screen, highlight):
   # draw the header bar
   i = 1
   (cols, rows) = screen.getmaxyx( )
-  screen.addstr(0, 0, "q:Quit n:New e:Edit x:Check c:Clear ?:Help".ljust(rows), get_header_color( ))
+  screen.addstr(0, 0, "q:Quit n:New e:Edit d:Delete c:Clear ?:Help".ljust(rows), get_header_color( ))
   # get tasks if needed
   if tasks == None:
     tasks = gtasks.get_tasks( )
@@ -166,7 +192,7 @@ def main_loop(screen):
       if highlight < 1:
         highlight += 1
     # check/uncheck a task
-    elif c == ord('x'):
+    elif c == ord('d'):
       tasks[highlight - 1].check( )
       tasks = gtasks.get_tasks( )
     # clear all checked tasks
@@ -178,6 +204,9 @@ def main_loop(screen):
     # make a new task
     elif c == ord('n'):
       new_task( )      
+    # edit the existing task
+    elif c == ord('e'):
+      edit_task(highlight - 1)
     # jump to task by number
     elif c >= ord('0') and c <= ord('9'):
       # get the whole number

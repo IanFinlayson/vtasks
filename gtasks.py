@@ -1,3 +1,4 @@
+# vtasks, a terminal google tasks client, MIT license
 # this file deals with the Google tasks API - creidt to the following blog post:
 # http://parezcoydigo.wordpress.com/2011/05/16/google-tasks-terminal-geek-tool/
 # which is what this code was initially based on
@@ -58,6 +59,17 @@ class Task:
       return str(self.task['due'])[5:-14]
     else:
       return ''
+
+  # write this task to a file suitable for editing
+  def write_file(self, fname):
+    f = open(fname, 'w')
+    # if there's a due date, write it on line one
+    if 'due' in self.task:
+      f.write(self.due( ))
+      f.write('\n')
+    # write the text of it onto the next line
+    f.write(self.text( ))
+    f.close( )
 
   # return whether or not the task is completed
   def completed(self):
