@@ -1,7 +1,7 @@
 # vtasks, a terminal google tasks client, MIT license
 # this file includes the curses interface
 
-from os import system
+from os import system, environ
 from random import choice
 import curses
 import curses.textpad
@@ -15,7 +15,7 @@ tasks = None
 
 # the status message to show.  It is displayed until
 # the user hits a key at which point it is cleared
-status = ""
+status = ''
 
 # start the curses library, and return the screen
 def start_curses( ):
@@ -46,7 +46,7 @@ def help_screen(screen):
   # clear and write to the screen, then wait for input
   screen.clear( )
   (cols, rows) = screen.getmaxyx( )
-  screen.addstr(0, 0, "vtasks - Help Screen, press any key to return".ljust(rows), get_header_color( ))
+  screen.addstr(0, 0, 'vtasks - Help Screen, press any key to return'.ljust(rows), get_header_color( ))
   i = 1
   for line in\
       ['',
@@ -81,17 +81,22 @@ def help_screen(screen):
 # tasks meanging the user can see his task files if he needs to for some
 # reason (this has proved useful with mutt)
 def get_tmp_file( ):
-  return "/tmp/vtasks-" + "".join(choice(ascii_uppercase + digits) for _ in range(8))
+  return '/tmp/vtasks-' + ''.join(choice(ascii_uppercase + digits) for _ in range(8))
 
 # create a new task and enter it into the task list
 def new_task( ):
+  global status
   global tasks
+  if environ.get('EDITOR') == None:
+    # they don't have a $EDITOR - or the one they set couldn't run.  how blase
+    status = 'Your $EDITOR does not appear to be set.'
+    return
   # get the temp file name
   fname = get_tmp_file( )
   # suspend curses before we execute the editor
   curses.endwin( )
   # next we open this file with the user's $EDITOR
-  system("$EDITOR " + fname)
+  system('$EDITOR ' + fname)
   # when this returns, the file we created should be filled with the users task
   # resume curses
   screen = curses.initscr( )
@@ -105,6 +110,11 @@ def new_task( ):
 # edits an existing task
 def edit_task(which):
   global tasks
+  global status
+  if environ.get('EDITOR') == None:
+    # they don't have a $EDITOR - or the one they set couldn't run.  how blase
+    status = 'Your $EDITOR does not appear to be set.'
+    return
   # get the temp file name
   fname = get_tmp_file( )
   # write the task into this file
@@ -112,7 +122,7 @@ def edit_task(which):
   # open an editor on the file
   curses.endwin( )
   # next we open this file with the user's $EDITOR
-  system("$EDITOR " + fname)
+  system('$EDITOR ' + fname)
   # when this returns, the file we created should be filled with the users task
   # resume curses
   screen = curses.initscr( )
@@ -172,7 +182,7 @@ def get_user_text(screen, message, first):
   (cols, rows) = screen.getmaxyx( )
   nw = curses.newwin(1, rows - 1, cols - 1, 0)
   tb = curses.textpad.Textbox(nw)
-  for c in message + ": " + chr(first):
+  for c in message + ': ' + chr(first):
     tb.do_command(c)
   text = tb.edit( )
   return text[len(message) + 2:]
@@ -184,7 +194,7 @@ def draw_window(screen, highlight):
   # draw the header bar
   i = 1
   (cols, rows) = screen.getmaxyx( )
-  screen.addstr(0, 0, "vtasks - q:Quit n:New e:Edit x:Check c:Clear ?:Help".ljust(rows), get_header_color( ))
+  screen.addstr(0, 0, 'vtasks - q:Quit n:New e:Edit x:Check c:Clear ?:Help'.ljust(rows), get_header_color( ))
   # get tasks if needed
   if tasks == None:
     tasks = gtasks.get_tasks( )
@@ -206,7 +216,7 @@ def main_loop(screen):
     draw_window(screen, highlight)
     c = screen.getch( )
     # clear any old status message
-    status = ""
+    status = ''
     # quit
     if c == ord('q'):
       return
@@ -242,7 +252,7 @@ def main_loop(screen):
     # jump to task by number
     elif c >= ord('0') and c <= ord('9'):
       # get the whole number
-      num = get_user_text(screen, "Jump to task", c)
+      num = get_user_text(screen, 'Jump to task', c)
       try:
          num = int(num)
          if num < 1:
@@ -251,7 +261,7 @@ def main_loop(screen):
            raise ValueError
          highlight = num
       except ValueError:
-        status = "Invalid number"
+        status = 'Invalid number'
 
 # main function which is called after authenticating the application
 def main( ):
@@ -260,6 +270,6 @@ def main( ):
   stop_curses(screen)
 
 # when run as a script run our main function
-if __name__ == "__main__":
+if __name__ == '__main__':
   main( )
 

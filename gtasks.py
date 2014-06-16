@@ -120,8 +120,13 @@ def get_tasks( ):
 # add a task into the task list
 def add_task(fname):
   # load the data from this file
-  f = open(fname)
-  data = f.readlines( )
+  try:
+    f = open(fname)
+    data = f.readlines( )
+  except:
+    # if anything goes wrong, they probably just quit without saving the file,
+    # so we'll return without modifying anything
+    return
 
   # condense the lines into one, and remove consecutive whitespace
   text = " ".join(data)
@@ -142,28 +147,16 @@ def add_task(fname):
   else:
     due = None
 
-  # TODO allow for different lists
-  listName = 'Todo'
-
   # set up the task itself
   if due != None:
     task = {'title' : text, 'due' : due + 'T12:00:00.000Z'}
   else:
     task = {'title' : text}
-  # find the task list by name
+
+  # find the first task list to insert the item!
   tasklists = service.tasklists().list().execute()
-  listID = None
-  for tasklist in tasklists['items']:
-    if listName == tasklist['title']:
-      listID=tasklist['id']
-      break
-  # if not found make a new list (this won't happen)
-  if listID == None:
-    tasklist = {
-      'title': listName,
-      }
-    result = service.tasklists().insert(body=tasklist).execute()
-    listID = result['id']
+  listID = tasklists['items'][0]['id']
+
   # actually insert the task
   newTask = service.tasks().insert(tasklist=listID, body=task).execute()
 
