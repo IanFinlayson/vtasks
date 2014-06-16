@@ -44,6 +44,33 @@ this is a one time step.  From then on vtasks should open on startup, with
 no hassle.
 
 ### Usage
+- Move down and up with j and k or the arrow keys.  Jump to a specific task by
+entering the number to the left of it.
+
+- Quit by pressing q.
+
+- Create a new task by pressing n.  This will pull up your $EDITOR of choice.
+Enter your task in the editor.  Multiple lines will be collapsed.  If you want
+a due date, include it in the form \'MM-DD\' or \'YYYY-MM-DD\' anywhere in the
+file.  After you save and quit, the new task will be created.
+
+- Edit a task by pressing e.  This will pull up your $EDITOR with the task that is
+highlighted.  Changes made to the task will be applied when you quit.
+
+- Check or uncheck the current task with x.  It will remain on your list until it
+is cleared, though the color will change to show it has been completed.
+
+- Clear all completed tasks by pressing c.
+
+- Show a help screen by pressing ?.
+
+Direct any bugs or questions to https://github.com/IanFinlayson/vtasks/.
+
+
+### Limitations
+vtasks does not really support multiple separate task lists.  It will display
+your tasks from all lists, but only add new tasks to the first list.  I only
+use one, so this probably won't change soon.
 
 
 

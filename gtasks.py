@@ -3,6 +3,7 @@
 # http://parezcoydigo.wordpress.com/2011/05/16/google-tasks-terminal-geek-tool/
 # which is what this code was initially based on
 
+import string
 import time
 import re
 import datetime
@@ -91,6 +92,16 @@ class Task:
       action['completed'] = datetime.datetime.utcnow( ).isoformat("T") + "Z"
     service.tasks( ).update(tasklist = self.tasklist['id'], task = self.task['id'], body = action).execute( )
 
+# returns a due date suitable for sorting by
+def get_date_key(task):
+  due = task.due( )
+  if due == '':
+    return 2000
+  else:
+    [m, d] = map(int, string.split(due, '-'))
+    return m * 100 + d
+
+
 # the following function returns a list of all tasks in the users list
 def get_tasks( ):
   all_tasks = []
@@ -103,8 +114,8 @@ def get_tasks( ):
     for task in tasks['items']:
       # add an entry for this task
       all_tasks.append(Task(task, tasklist))
-  # return all tasks
-  return all_tasks
+  # return all tasks sorted by due date (Python's sort is stable)
+  return sorted(all_tasks, key=get_date_key)
 
 # add a task into the task list
 def add_task(fname):

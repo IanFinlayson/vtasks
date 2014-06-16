@@ -41,6 +41,40 @@ def stop_curses(screen):
   curses.echo()
   curses.endwin()
 
+# displays the help screen
+def help_screen(screen):
+  # clear and write to the screen, then wait for input
+  screen.clear( )
+  (cols, rows) = screen.getmaxyx( )
+  screen.addstr(0, 0, "vtasks - Help Screen, press any key to return".ljust(rows), get_header_color( ))
+  i = 1
+  for line in\
+      ['',
+       'Move down and up with j and k or the arrow keys.  Jump to a specific task by',
+       'entering the number to the left of it.',
+       '',
+       'Quit by pressing q.',
+       '',
+       'Create a new task by pressing n.  This will pull up your $EDITOR of choice.',
+       'Enter your task in the editor.  Multiple lines will be collapsed.  If you want',
+       'a due date, include it in the form \'MM-DD\' or \'YYYY-MM-DD\' anywhere in the',
+       'file.  After you save and quit, the new task will be created.',
+       '',
+       'Edit a task by pressing e.  This will pull up your $EDITOR with the task that is',
+       'highlighted.  Changes made to the task will be applied when you quit.',
+       '',
+       'Check or uncheck the current task with x.  It will remain on your list until it',
+       'is cleared, though the color will change to show it has been completed.',
+       '',
+       'Clear all completed tasks by pressing c.',
+       '',
+       'Show this help screen by pressing ?.',
+       '',
+       'Direct any bugs or questions to https://github.com/IanFinlayson/vtasks/.']:
+    screen.addstr(i, 0, line)
+    i += 1
+  c = screen.getch( )
+
 # return a new temporary file name
 # this is done with a fixed prefix + 8 random letters and digits
 # this makes it likely that we will use different files for different
@@ -48,7 +82,6 @@ def stop_curses(screen):
 # reason (this has proved useful with mutt)
 def get_tmp_file( ):
   return "/tmp/vtasks-" + "".join(choice(ascii_uppercase + digits) for _ in range(8))
-
 
 # create a new task and enter it into the task list
 def new_task( ):
@@ -90,10 +123,6 @@ def edit_task(which):
   gtasks.add_task(fname)
   # refresh the task list
   tasks = gtasks.get_tasks( )
-
-
-
-
 
 # returns a color pair for the header line
 def get_header_color( ):
@@ -155,7 +184,7 @@ def draw_window(screen, highlight):
   # draw the header bar
   i = 1
   (cols, rows) = screen.getmaxyx( )
-  screen.addstr(0, 0, "q:Quit n:New e:Edit d:Delete c:Clear ?:Help".ljust(rows), get_header_color( ))
+  screen.addstr(0, 0, "vtasks - q:Quit n:New e:Edit x:Check c:Clear ?:Help".ljust(rows), get_header_color( ))
   # get tasks if needed
   if tasks == None:
     tasks = gtasks.get_tasks( )
@@ -181,6 +210,9 @@ def main_loop(screen):
     # quit
     if c == ord('q'):
       return
+    # help
+    elif c == ord('?'):
+      help_screen(screen)
     # scrolling down
     elif c == ord('j') or c == curses.KEY_DOWN:
       highlight += 1
@@ -192,7 +224,7 @@ def main_loop(screen):
       if highlight < 1:
         highlight += 1
     # check/uncheck a task
-    elif c == ord('d'):
+    elif c == ord('x'):
       tasks[highlight - 1].check( )
       tasks = gtasks.get_tasks( )
     # clear all checked tasks
@@ -220,10 +252,6 @@ def main_loop(screen):
          highlight = num
       except ValueError:
         status = "Invalid number"
-
-      
-
-
 
 # main function which is called after authenticating the application
 def main( ):
