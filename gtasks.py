@@ -111,6 +111,8 @@ def get_tasks( ):
     listID = tasklist['id']
     # for each task in this list
     tasks = service.tasks( ).list(tasklist = listID).execute()
+    if not 'items' in tasks:
+      return []
     for task in tasks['items']:
       # add an entry for this task
       all_tasks.append(Task(task, tasklist))
