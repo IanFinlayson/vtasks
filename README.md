@@ -51,7 +51,7 @@ entering the number to the left of it.
 
 - Create a new task by pressing n.  This will pull up your $EDITOR of choice.
 Enter your task in the editor.  Multiple lines will be collapsed.  If you want
-a due date, include it in the form \'MM-DD\' or \'YYYY-MM-DD\' anywhere in the
+a due date, include it in the form MM-DD or YYYY-MM-DD anywhere in the
 file.  After you save and quit, the new task will be created.
 
 - Edit a task by pressing e.  This will pull up your $EDITOR with the task that is
