@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 # vtasks, a terminal google tasks client, MIT license
 # this file deals with the Google tasks API - creidt to the following blog post:
 # http://parezcoydigo.wordpress.com/2011/05/16/google-tasks-terminal-geek-tool/
@@ -42,7 +44,6 @@ http = credentials.authorize(http)
 # to get a developerKey for your own application.
 service = build(serviceName='tasks', version='v1', http=http,
        developerKey=keyring.get_password('googleDevKey', 'finlaysoni@gmail.com'))
-
 
 # a class for storing a task
 class Task:

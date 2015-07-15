@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 # vtasks, a terminal google tasks client, MIT license
 # this file includes the curses interface
 
@@ -137,12 +139,12 @@ def edit_task(which):
 # returns a color pair for the header line
 def get_header_color( ):
   curses.init_pair(1, -1, curses.COLOR_BLACK)
-  return curses.color_pair(1)
+  return (curses.color_pair(1) | curses.A_BOLD)
 
 # get a color pair for completed tasks
 def get_completed_color( ):
   curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)
-  return curses.color_pair(2) | curses.A_BOLD
+  return curses.color_pair(2)
 
 # returns a color pair for the current highlighted line
 def get_highlight_color( ):
@@ -169,7 +171,7 @@ def draw_task(screen, task, i, highlight, rows):
   elif i == highlight:
     style = get_highlight_color( )
   else:
-    style = curses.A_BOLD
+    style = 7
   # set up the text to be shown
   line = ' ' + str(i).ljust(4) + task.due( ).ljust(8) + task.text( )
   if len(line) < rows:

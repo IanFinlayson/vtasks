@@ -12,7 +12,7 @@ on how to fulfill them:
 python-httplib2".
 - python-keyring.  This can be installed on ubuntu by "sudo aptitude install
 python-keyring".
-- python-gflags.  This can be installed with "sudo aptitude installed python-gflags".
+- python-gflags.  This can be installed with "sudo aptitude install python-gflags".
 - The Google Python API's.  This can be installed with the "easy\_install"
 Python program: "sudo aptitude install python-setuptools && sudo easy\_install --upgrade google-api-python-client".
 
